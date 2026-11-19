@@ -214,7 +214,6 @@ class MainActivity : AppCompatActivity() {
             }
         }, null)
 
-        val canvas = Canvas(surface)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
 
         val skinPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = faceColor }
@@ -251,11 +250,11 @@ class MainActivity : AppCompatActivity() {
             matrix.postRotate(rot)
             matrix.postTranslate(cx + dx, cy + dy)
 
+            val canvas = surface.lockCanvas(null)
             canvas.drawColor(Color.rgb(24, 24, 24))
             canvas.save()
             canvas.concat(matrix)
             canvas.drawBitmap(face, 0f, 0f, paint)
-
             // blink overlay (drawn in same transformed space)
             var blinkAmount = 0f // 0 = open, 1 = closed
             for ((start, dur) in blinks) {
@@ -276,6 +275,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             canvas.restore()
+            surface.unlockCanvasAndPost(canvas)
 
             // pace to real time: Surface-input encoders stamp frames at render time
             val expectNanos = i * 1_000_000_000L / FPS
