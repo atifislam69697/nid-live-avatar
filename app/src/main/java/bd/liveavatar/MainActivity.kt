@@ -186,15 +186,12 @@ class MainActivity : AppCompatActivity() {
             setInteger(android.media.MediaFormat.KEY_FRAME_RATE, FPS)
             setInteger(android.media.MediaFormat.KEY_I_FRAME_INTERVAL, 1)
         }
-        encoder.configure(format, null, null, android.media.MediaCodec.CONFIGURE_FLAG_ENCODE)
-        val surface = encoder.createInputSurface()
-        encoder.start()
-
         var muxerStarted = false
         var trackIndex = -1
         val muxer = android.media.MediaMuxer(tmp.absolutePath,
             android.media.MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
 
+        // callback must be set BEFORE configure/start (async mode)
         encoder.setCallback(object : android.media.MediaCodec.Callback() {
             override fun onInputBufferAvailable(codec: android.media.MediaCodec, index: Int) {}
             override fun onOutputBufferAvailable(codec: android.media.MediaCodec, index: Int,
@@ -213,6 +210,10 @@ class MainActivity : AppCompatActivity() {
                 muxerStarted = true
             }
         }, null)
+
+        encoder.configure(format, null, null, android.media.MediaCodec.CONFIGURE_FLAG_ENCODE)
+        val surface = encoder.createInputSurface()
+        encoder.start()
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
 
